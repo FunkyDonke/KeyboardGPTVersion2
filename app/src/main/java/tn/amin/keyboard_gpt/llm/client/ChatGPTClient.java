@@ -22,10 +22,6 @@ public class ChatGPTClient extends LanguageModelClient {
             return LanguageModelClient.MISSING_API_KEY_PUBLISHER;
         }
 
-        if (systemMessage == null) {
-            systemMessage = getDefaultSystemMessage();
-        }
-
         String url = getBaseUrl() + "/chat/completions";
         HttpURLConnection con;
         try {
@@ -35,9 +31,11 @@ public class ChatGPTClient extends LanguageModelClient {
             con.setRequestProperty("Authorization", "Bearer " + getApiKey());
 
             JSONArray messagesJson = new JSONArray();
-            messagesJson.put(new JSONObject()
-                    .accumulate("role", "system")
-                    .accumulate("content", systemMessage));
+                if (systemMessage != null && !systemMessage.isEmpty()) {
+                    messagesJson.put(new JSONObject()
+                        .accumulate("role", "system")
+                        .accumulate("content", systemMessage));
+            }
             messagesJson.put(new JSONObject()
                     .accumulate("role", "user")
                     .accumulate("content", prompt));
