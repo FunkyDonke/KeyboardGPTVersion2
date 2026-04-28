@@ -23,8 +23,12 @@ public class GeminiClient extends LanguageModelClient {
         }
 
         if (systemMessage == null) {
-            systemMessage = "[system message] " + getDefaultSystemMessage();
+            systemMessage = getDefaultSystemMessage();
         }
+
+        String systemMessageForGemini = (systemMessage != null && !systemMessage.isEmpty())
+                ? "[system message] " + systemMessage
+                : null;
 
         String url = String.format("%s/models/%s:generateContent", getBaseUrl(), getSubModel());
         HttpURLConnection con;
@@ -35,8 +39,10 @@ public class GeminiClient extends LanguageModelClient {
             con.setRequestProperty("x-goog-api-key", getApiKey());
 
             JSONArray contentsJson = new JSONArray();
-            contentsJson.put(new JSONArray().put(new JSONObject().put("role", "user").put("parts",
-                    new JSONArray().put(new JSONObject().put("text", systemMessage)))));
+            if (systemMessageForGemini != null) {
+                contentsJson.put(new JSONArray().put(new JSONObject().put("role", "user").put("parts",
+                        new JSONArray().put(new JSONObject().put("text", systemMessageForGemini)))));
+            }
             contentsJson.put(new JSONArray().put(new JSONObject().put("role", "user").put("parts",
                     new JSONArray().put(new JSONObject().put("text", prompt)))));
             JSONObject generationConfigJson = new JSONObject()
